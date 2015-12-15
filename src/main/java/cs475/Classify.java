@@ -20,6 +20,10 @@ public class Classify {
 		SoftmaxClassifier softmax = new SoftmaxClassifier();
 		softmax.train(null);
 		softmax.validate();
+		System.out.println("\nSoftmax classifier with PCA:");
+		SoftmaxClassifier softmax2 = new SoftmaxClassifier(200);
+		softmax2.train(null);
+		softmax2.validate();
 	}
 
 	private static void testVector() {

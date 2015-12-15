@@ -4,21 +4,28 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import jsat.classifiers.bayesian.MultinomialNaiveBayes;
 import jsat.classifiers.linear.StochasticMultinomialLogisticRegression;
+import jsat.datatransform.featureselection.MutualInfoFS;
 import jsat.io.LIBSVMLoader;
 import jsat.classifiers.*;
-
+import jsat.regression.*;
 /**
  * Created by DJBen on 12/12/15.
  */
 public class SoftmaxClassifier extends Classifier {
 
     private double learningRate = 0.1;
-    private int iterations = 100;
+    private int iterations = 50;
+    private int maxDimensions = -1;
 
     private jsat.classifiers.Classifier classifier;
 
     public SoftmaxClassifier() {
+    }
+
+    public SoftmaxClassifier(int maxDimensions) {
+        this.maxDimensions = maxDimensions;
     }
 
     public SoftmaxClassifier(int iterations, double learningRate) {
@@ -30,6 +37,16 @@ public class SoftmaxClassifier extends Classifier {
     public void train(Map<String, List<FeatureVector>> songs) throws IOException {
         File file = new File("data/dataset_train.libsvm");
         ClassificationDataSet dataSet = LIBSVMLoader.loadC(file);
+
+        if (maxDimensions > 0) {
+//            System.out.println("Applying zero mean transform");
+//            DataTransform zeroMean = new ZeroMeanTransform(dataSet);
+//            dataSet.applyTransform(zeroMean);
+            System.out.println("Applying Mutual Info transform " + maxDimensions);
+            MutualInfoFS transform = new MutualInfoFS(dataSet, 200);
+            dataSet.applyTransform(transform);
+        }
+        System.out.println("Training...");
         classifier = new StochasticMultinomialLogisticRegression(learningRate, iterations);
         classifier.trainC(dataSet);
     }
