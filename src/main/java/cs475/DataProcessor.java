@@ -9,23 +9,50 @@ public class DataProcessor {
 
 	private static String FILE_NAME = "data/msd_genre_dataset.txt";
 
-	public static void main(String[] args) {
-		try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
-    		String line;
-    		while ((line = br.readLine()) != null) {
-    			line = line.trim();
-    			if (line.charAt(0) == '#' || line.charAt(0) == '%') {
-    				continue;
-    			}
-    			String[] features = line.split(",");
-    			String genre = features[0];
-    			String trackId = features[1];
-    			trackGenres.put(trackId, genre);
-    		}
-			addGenreToDataset("data/mxm_dataset_train.txt", "data/dataset_train.txt");
-			addGenreToDataset("data/mxm_dataset_test.txt", "data/dataset_test.txt");
-		} catch (Exception exception) {
-			System.out.println(exception);
+	public static void main(String[] args) throws Exception {
+//		try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
+//    		String line;
+//    		while ((line = br.readLine()) != null) {
+//    			line = line.trim();
+//    			if (line.charAt(0) == '#' || line.charAt(0) == '%') {
+//    				continue;
+//    			}
+//    			String[] features = line.split(",");
+//    			String genre = features[0];
+//    			String trackId = features[1];
+//    			trackGenres.put(trackId, genre);
+//    		}
+//			addGenreToDataset("data/mxm_dataset_train.txt", "data/dataset_train.txt");
+//			addGenreToDataset("data/mxm_dataset_test.txt", "data/dataset_test.txt");
+//		} catch (Exception exception) {
+//			System.out.println(exception);
+//		}
+		chooseMostFrequent(4500, "data/dataset_test.libsvm", "data/dataset_test_2000.libsvm");
+		chooseMostFrequent(4500, "data/dataset_train.libsvm", "data/dataset_train_2000.libsvm");
+	}
+
+	private static void chooseMostFrequent(int upTo, String inFile, String outFile) throws Exception {
+		try (BufferedReader br = new BufferedReader(new FileReader(inFile))) {
+			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile), "utf-8"))) {
+				String line;
+				while ((line = br.readLine()) != null) {
+					String[] features = line.split(" ");
+					String genre = features[0];
+					writer.write(genre + " ");
+					for (int i = 1; i < features.length; i++) {
+						String[] components = features[i].split(":");
+						if (Integer.parseInt(components[0]) <= upTo) {
+							if (i != 1) {
+								writer.write(" ");
+							}
+							writer.write(features[i]);
+						} else {
+							break;
+						}
+					}
+					writer.newLine();
+				}
+			}
 		}
 	}
 

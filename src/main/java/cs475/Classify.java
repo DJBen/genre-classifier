@@ -6,24 +6,26 @@ import java.util.stream.*;
 
 public class Classify {
 
-	private static Map<String, List<FeatureVector>> songs;
 	private static Set<String> vocabulary;
+    private static Map<String, List<FeatureVector>> songs;
 
 	public static void main(String[] args) throws Exception {
 		testVector();
 		System.out.println("Naive bayes classifier:");
-		loadDataSet("data/dataset_train.txt");
+        songs = loadDataSet("data/dataset_train.txt");
+        Map<String, List<FeatureVector>> testSongs = loadDataSet("data/dataset_test.txt");
 		Classifier classifier = new NaiveBayesClassifier(vocabulary.size());
 		classifier.train(songs);
 		testDataSet(classifier, "data/dataset_test.txt");
 		System.out.println("\nSoftmax classifier:");
 		SoftmaxClassifier softmax = new SoftmaxClassifier();
-		softmax.train(null);
-		softmax.validate();
-		System.out.println("\nSoftmax classifier with PCA:");
-		SoftmaxClassifier softmax2 = new SoftmaxClassifier(200);
-		softmax2.train(null);
-		softmax2.validate();
+		softmax.train("data/dataset_train.libsvm");
+		softmax.validate("data/dataset_test.libsvm");
+		System.out.println("\nSoftmax classifier with top 2000 words:");
+		SoftmaxClassifier softmax2 = new SoftmaxClassifier();
+		softmax2.train("data/dataset_train_2000.libsvm");
+		softmax2.validate("data/dataset_test_2000.libsvm");
+//		LogisticsRegressionClassifier.trainAndValidate(songs, testSongs);
 	}
 
 	private static void testVector() {
@@ -58,10 +60,10 @@ public class Classify {
 		}
 	}
 
-	private static void loadDataSet(String fileName) throws Exception {
+	private static Map<String, List<FeatureVector>> loadDataSet(String fileName) throws Exception {
 		try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
     		String line;
-    		songs = new HashMap<>();
+			Map<String, List<FeatureVector>> songList = new HashMap<>();
     		vocabulary = new HashSet<>();
     		while ((line = br.readLine()) != null) {
     			line = line.trim();
@@ -85,13 +87,14 @@ public class Classify {
     				int wordFreq = Integer.parseInt(subcomponents[1]);
     				features.put(wordIndex, wordFreq);
     			}
-    			List<FeatureVector> list = songs.get(label);
+    			List<FeatureVector> list = songList.get(label);
     			if (list == null) {
     				list = new ArrayList<FeatureVector>();
-    				songs.put(label, list);
+    				songList.put(label, list);
     			}
     			list.add(features);
     		}
+			return songList;
 		}
 	}
 
@@ -132,6 +135,8 @@ public class Classify {
 
 	public static String shortenGenre(String name) {
 		switch (name) {
+        case "pop":
+            return "pop ";
 		case "dance and electronica":
 			return "dance";
 		case "jazz and blues":

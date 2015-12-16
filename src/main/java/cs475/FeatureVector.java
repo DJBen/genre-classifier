@@ -18,7 +18,11 @@ public class FeatureVector implements Serializable {
 			features.put(index, value - bias);
 		}
 	}
-	
+
+	Set<Map.Entry<Integer, Double>> entries() {
+		return features.entrySet();
+	}
+
 	public double get(int index) {
 		Double result = features.get(index);
 		if (result == null) return bias;
@@ -35,6 +39,15 @@ public class FeatureVector implements Serializable {
 			features.put(entry.getKey(), entry.getValue() + (current == null ? 0 : current));
 		}
 		this.bias += v2.getBias();
+	}
+
+
+	public double innerProduct(FeatureVector v2) {
+		double product = 0;
+		for (Map.Entry<Integer, Double> entry: v2.entries()) {
+			product += this.get(entry.getKey()) * entry.getValue();
+		}
+		return product;
 	}
 
 	public void addBias(double bias) {
